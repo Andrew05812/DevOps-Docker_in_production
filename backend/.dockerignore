@@ -1,0 +1,9 @@
+.git
+.gitignore
+.env
+.env.*
+*.crt
+*.key
+ssl/
+bin/
+tmp/
