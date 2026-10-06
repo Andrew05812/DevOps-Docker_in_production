@@ -18,16 +18,20 @@ type Note struct {
 type CreateNoteRequest struct {
 	Title   string `json:"title"`
 	Content string `json:"content"`
+	Body    string `json:"body"`
 }
 
 func (a *App) health(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	status := "ok"
+	dbOK := false
 
 	if a.pool != nil {
 		if err := a.pool.Ping(r.Context()); err != nil {
 			status = "degraded"
+		} else {
+			dbOK = true
 		}
 	}
 
@@ -37,8 +41,9 @@ func (a *App) health(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(code)
-	_ = json.NewEncoder(w).Encode(map[string]string{
+	_ = json.NewEncoder(w).Encode(map[string]any{
 		"status": status,
+		"db":     dbOK,
 	})
 }
 
@@ -91,9 +96,14 @@ func (a *App) createNote(w http.ResponseWriter, r *http.Request) {
 
 	req.Title = strings.TrimSpace(req.Title)
 	req.Content = strings.TrimSpace(req.Content)
+	req.Body = strings.TrimSpace(req.Body)
+
+	if req.Content == "" {
+		req.Content = req.Body
+	}
 
 	if req.Title == "" || req.Content == "" {
-		http.Error(w, "title and content are required", http.StatusBadRequest)
+		http.Error(w, "title and content/body are required", http.StatusBadRequest)
 		return
 	}
 
