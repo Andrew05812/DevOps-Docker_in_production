@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notes</title>
+</head>
+<body>
+  <div id="app">
+    <h1>Notes</h1>
+
+    <form id="note-form">
+      <input id="title" placeholder="Заголовок" required>
+      <textarea id="content" placeholder="Текст заметки" required></textarea>
+      <button type="submit">Добавить</button>
+    </form>
+
+    <div id="notes"></div>
+  </div>
+
+  <script type="module">
+    const form = document.querySelector('#note-form')
+    const title = document.querySelector('#title')
+    const content = document.querySelector('#content')
+    const notes = document.querySelector('#notes')
+
+    async function loadNotes() {
+      const response = await fetch('/api/notes')
+      const data = await response.json()
+
+      notes.innerHTML = data.map(note => `
+        <article>
+          <h2>${escapeHtml(note.title)}</h2>
+          <p>${escapeHtml(note.content)}</p>
+          <small>${new Date(note.created_at).toLocaleString()}</small>
+        </article>
+      `).join('')
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault()
+
+      await fetch('/api/notes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: title.value,
+          content: content.value
+        })
+      })
+
+      form.reset()
+      await loadNotes()
+    })
+
+    function escapeHtml(value) {
+      return value
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;')
+    }
+
+    loadNotes()
+  </script>
+</body>
+</html>

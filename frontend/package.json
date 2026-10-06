@@ -1,0 +1,14 @@
+{
+  "name": "notes-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "vite": "^6.0.0"
+  },
+  "devDependencies": {}
+}
